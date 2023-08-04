@@ -52,13 +52,13 @@ public class Server {
             request.setBody(parts[2]);
             final var path = parts[1];
             if (request.getMethod().equals("GET")) {
-                if (getPaths.containsKey(request.getBody())) {
+                if (getPaths.containsKey(request.getHeaders())) {
                     getPaths.get(request.getHeaders()).handle(request, out);
                 }
 
             }
             if (request.getMethod().equals("POST")) {
-                if (postPaths.containsKey(request.getBody())) {
+                if (postPaths.containsKey(request.getHeaders())) {
                     postPaths.get(request.getHeaders()).handle(request, out);
                 }
             }
