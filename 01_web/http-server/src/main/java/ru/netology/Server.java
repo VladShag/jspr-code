@@ -53,13 +53,13 @@ public class Server {
             final var path = parts[1];
             if (request.getMethod().equals("GET")) {
                 if (getPaths.containsKey(request.getBody())) {
-                    getPaths.get(request.getMethod()).handle(request, out);
+                    getPaths.get(request.getHeaders()).handle(request, out);
                 }
 
             }
             if (request.getMethod().equals("POST")) {
                 if (postPaths.containsKey(request.getBody())) {
-                    postPaths.get(request.getMethod()).handle(request, out);
+                    postPaths.get(request.getHeaders()).handle(request, out);
                 }
             }
             if (!validPaths.contains(path)) {

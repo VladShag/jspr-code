@@ -13,7 +13,6 @@ public class Main {
     server.addHandler("POST", "/messages", new Handler() {
       @Override
       public void handle(Request request, BufferedOutputStream responseStream) {
-
       }
     });
     server.startServer(9999);
