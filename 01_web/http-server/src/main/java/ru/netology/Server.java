@@ -56,53 +56,55 @@ public class Server {
                     getPaths.get(request.getHeaders()).handle(request, out);
                 }
 
-            }
-            if (request.getMethod().equals("POST")) {
+            } else if (request.getMethod().equals("POST")) {
                 if (postPaths.containsKey(request.getHeaders())) {
                     postPaths.get(request.getHeaders()).handle(request, out);
                 }
-            }
-            if (!validPaths.contains(path)) {
-                out.write((
-                        "HTTP/1.1 404 Not Found\r\n" +
-                                "Content-Length: 0\r\n" +
-                                "Connection: close\r\n" +
-                                "\r\n"
-                ).getBytes());
-                out.flush();
-            }
-            final var filePath = Path.of(".", "public", path);
-            final var mimeType = Files.probeContentType(filePath);
+            } else {
 
-            if (path.equals("/classic.html")) {
-                final var template = Files.readString(filePath);
-                final var content = template.replace(
-                        "{time}",
-                        LocalDateTime.now().toString()
-                ).getBytes();
+                if (!validPaths.contains(path)) {
+                    out.write((
+                            "HTTP/1.1 404 Not Found\r\n" +
+                                    "Content-Length: 0\r\n" +
+                                    "Connection: close\r\n" +
+                                    "\r\n"
+                    ).getBytes());
+                    out.flush();
+                }
+                final var filePath = Path.of(".", "public", path);
+                final var mimeType = Files.probeContentType(filePath);
+
+                if (path.equals("/classic.html")) {
+                    final var template = Files.readString(filePath);
+                    final var content = template.replace(
+                            "{time}",
+                            LocalDateTime.now().toString()
+                    ).getBytes();
+                    out.write((
+                            "HTTP/1.1 200 OK\r\n" +
+                                    "Content-Type: " + mimeType + "\r\n" +
+                                    "Content-Length: " + content.length + "\r\n" +
+                                    "Connection: close\r\n" +
+                                    "\r\n"
+                    ).getBytes());
+                    out.write(content);
+                    out.flush();
+
+                }
+                final var length = Files.size(filePath);
                 out.write((
                         "HTTP/1.1 200 OK\r\n" +
                                 "Content-Type: " + mimeType + "\r\n" +
-                                "Content-Length: " + content.length + "\r\n" +
+                                "Content-Length: " + length + "\r\n" +
                                 "Connection: close\r\n" +
                                 "\r\n"
                 ).getBytes());
-                out.write(content);
+                Files.copy(filePath, out);
                 out.flush();
-
             }
-            final var length = Files.size(filePath);
-            out.write((
-                    "HTTP/1.1 200 OK\r\n" +
-                            "Content-Type: " + mimeType + "\r\n" +
-                            "Content-Length: " + length + "\r\n" +
-                            "Connection: close\r\n" +
-                            "\r\n"
-            ).getBytes());
-            Files.copy(filePath, out);
-            out.flush();
         }
     }
+
 
     public void addHandler(String method, String header, Handler handler) {
         switch (method) {
