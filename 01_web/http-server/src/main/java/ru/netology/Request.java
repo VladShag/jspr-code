@@ -18,14 +18,14 @@ public class Request {
     private String path;
     private String httpVersion;
     private List<String> body;
-    private List<NameValuePair> params;
+    private List<NameValuePair> queryParams;
 
     public Request(String method, String path, String httpVersion) {
         this.method = method;
         this.path = path;
         this.httpVersion = httpVersion;
         try {
-            this.params = URLEncodedUtils.parse(new URI(path),"UTF-8");
+            this.queryParams = URLEncodedUtils.parse(new URI(path),"UTF-8");
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -72,10 +72,10 @@ public class Request {
 
 
     public List<NameValuePair> getQueryParams() {
-        return params;
+        return queryParams;
     }
     public NameValuePair getQueryParam(String name) {
-        for(NameValuePair param : params) {
+        for(NameValuePair param : queryParams) {
             if(param.getName().equals(name)) {
                 return param;
             }
