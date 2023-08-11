@@ -1,27 +1,34 @@
 package ru.netology;
 
 
-import org.apache.commons.fileupload.FileUpload;
-import org.apache.commons.fileupload.RequestContext;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Request {
     private String method;
     private String path;
+    private String httpVersion;
     private List<String> body;
+    private List<NameValuePair> params;
 
-    public Request(String method, String headers) {
+    public Request(String method, String path, String httpVersion) {
         this.method = method;
-        this.path = headers;
+        this.path = path;
+        this.httpVersion = httpVersion;
+        try {
+            this.params = URLEncodedUtils.parse(new URI(path),"UTF-8");
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getMethod() {
@@ -32,11 +39,11 @@ public class Request {
         this.method = method;
     }
 
-    public String getHeaders() {
+    public String getPath() {
         return path;
     }
 
-    public void setHeaders(String headers) {
+    public void setPath(String headers) {
         this.path = headers;
     }
 
@@ -62,11 +69,12 @@ public class Request {
         final var headers = Arrays.asList(body.split("\r\n"));
         this.body = headers;
     }
-    public List<NameValuePair> getQueryParams() throws URISyntaxException {
-        return URLEncodedUtils.parse(new URI(path),"UTF-8");
+
+
+    public List<NameValuePair> getQueryParams() {
+        return params;
     }
-    public NameValuePair getQueryParam(String name) throws URISyntaxException {
-        List<NameValuePair> params = URLEncodedUtils.parse(new URI(path), "UTF-8");
+    public NameValuePair getQueryParam(String name) {
         for(NameValuePair param : params) {
             if(param.getName().equals(name)) {
                 return param;
@@ -74,21 +82,27 @@ public class Request {
         }
         return null;
     }
-    public String getPostParams() {
+    public List<NameValuePair> getPostParams()   {
         if(this.method.equals("POST")){
-            return this.body.get(body.size() - 1);
-        } else return "No Parameters";
-    }
-    public String getPostParam(String name) {
+        String params= this.body.get(body.size() - 1);
+        List<NameValuePair> postParams = new ArrayList<>();
+        String[] parameters = params.split("&");
+        for(String s : parameters) {
+            postParams.add(new BasicNameValuePair(s.substring(0, s.indexOf("=")),s.substring(s.indexOf("="))));
+        }
+        return postParams;
+    } else return null;
+}
+    public NameValuePair getPostParam(String name) {
         if(this.method.equals("POST")) {
             String[] parameters = body.get(body.size()-1).split("&");
             for(String s : parameters) {
                 if(s.startsWith(name)) {
-                    return s;
+                    return new BasicNameValuePair(s.substring(0, s.indexOf("=")),s.substring(s.indexOf("=")));
                 }
             }
         }
-        return "No parameters";
+        return null;
     }
 
     }

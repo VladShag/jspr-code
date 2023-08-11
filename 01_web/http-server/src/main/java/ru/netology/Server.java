@@ -1,5 +1,7 @@
 package ru.netology;
 
+import org.apache.http.NameValuePair;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -10,7 +12,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -50,25 +52,24 @@ public class Server {
         try (clientSocket; BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); BufferedOutputStream out = new BufferedOutputStream(clientSocket.getOutputStream())) {
             final var requestLine = in.readLine();
             System.out.println(requestLine);
-
             final var parts = requestLine.split(" ");
-            Request request = new Request(parts[0], parts[1]);
+            Request request = new Request(parts[0], parts[1], parts[2]);
             request.setBodyFromInput(in);
             System.out.println(request.getPostParams());
-            System.out.println(request.getQueryParams().toString());
             System.out.println(request.getPostParam("password"));
+            System.out.println(request.getQueryParams().toString());
             var path = parts[1];
             if(path.contains("?")) {
                 path = path.substring(0,path.indexOf('?'));
             }
             if (request.getMethod().equals("GET")) {
-                if (getPaths.containsKey(request.getHeaders())) {
-                    getPaths.get(request.getHeaders()).handle(request, out);
+                if (getPaths.containsKey(request.getPath())) {
+                    getPaths.get(request.getPath()).handle(request, out);
                 }
 
             } else if (request.getMethod().equals("POST")) {
-                if (postPaths.containsKey(request.getHeaders())) {
-                    postPaths.get(request.getHeaders()).handle(request, out);
+                if (postPaths.containsKey(request.getPath())) {
+                    postPaths.get(request.getPath()).handle(request, out);
                 }
             }
 
@@ -111,8 +112,6 @@ public class Server {
                 ).getBytes());
                 Files.copy(filePath, out);
                 out.flush();
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
         }
     }
 

@@ -136,3 +136,31 @@ public class Main {
     return -1;
   }
 }
+
+
+
+
+{
+        if(this.method.equals("POST")){
+        String params= this.body.get(body.size() - 1);
+        List<NameValuePair> postParams = new ArrayList<>();
+        String[] parameters = params.split(" ");
+        for(String s : parameters) {
+        postParams.add(new NameValuePair() {
+@Override
+public String getName() {
+        return s.substring(0, s.indexOf("&"));
+        }
+
+@Override
+public String getValue() {
+        return s.substring(s.indexOf("&"));
+        }
+        });
+        }
+        return postParams;
+        } else return null;
+        }
+
+
+        login=ggfgd&password=gfdgf
