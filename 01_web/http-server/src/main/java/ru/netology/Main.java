@@ -10,11 +10,6 @@ import java.util.List;
 public class Main {
   public static void main(String[] args) throws IOException {
     Server server = new Server();
-    server.addHandler("POST", "/messages", new Handler() {
-      @Override
-      public void handle(Request request, BufferedOutputStream responseStream) {
-      }
-    });
     server.startServer(9999);
 
   }

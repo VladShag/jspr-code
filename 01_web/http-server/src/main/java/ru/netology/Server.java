@@ -6,9 +6,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -47,10 +49,18 @@ public class Server {
 
         try (clientSocket; BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream())); BufferedOutputStream out = new BufferedOutputStream(clientSocket.getOutputStream())) {
             final var requestLine = in.readLine();
+            System.out.println(requestLine);
+
             final var parts = requestLine.split(" ");
             Request request = new Request(parts[0], parts[1]);
-            request.setBody(parts[2]);
-            final var path = parts[1];
+            request.setBodyFromInput(in);
+            System.out.println(request.getPostParams());
+            System.out.println(request.getQueryParams().toString());
+            System.out.println(request.getPostParam("password"));
+            var path = parts[1];
+            if(path.contains("?")) {
+                path = path.substring(0,path.indexOf('?'));
+            }
             if (request.getMethod().equals("GET")) {
                 if (getPaths.containsKey(request.getHeaders())) {
                     getPaths.get(request.getHeaders()).handle(request, out);
@@ -60,9 +70,9 @@ public class Server {
                 if (postPaths.containsKey(request.getHeaders())) {
                     postPaths.get(request.getHeaders()).handle(request, out);
                 }
-            } else {
+            }
 
-                if (!validPaths.contains(path)) {
+            if (!validPaths.contains(path)) {
                     out.write((
                             "HTTP/1.1 404 Not Found\r\n" +
                                     "Content-Length: 0\r\n" +
@@ -101,7 +111,8 @@ public class Server {
                 ).getBytes());
                 Files.copy(filePath, out);
                 out.flush();
-            }
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
         }
     }
 
