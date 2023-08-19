@@ -6,43 +6,47 @@ import ru.netology.model.Post;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicLong;
 
 // Stub
 public class PostRepository {
-  private CopyOnWriteArrayList<Post> repo;
-  private int idCounter = 1;
+  private ConcurrentHashMap<Long, Post> repo;
+  private AtomicLong idCounter;
 
   public PostRepository() {
+    idCounter = new AtomicLong();
+    idCounter.set(1);
     this.initRepo();
   }
-  private CopyOnWriteArrayList<Post> initRepo() {
+  private ConcurrentHashMap<Long, Post> initRepo() {
     if(this.repo != null) return repo;
     else {
-      this.repo = new CopyOnWriteArrayList<>();
+      this.repo = new ConcurrentHashMap<>();
     }
     return repo;
   }
 
   public List<Post> all() {
-    return repo;
+    return repo.values().stream().toList();
   }
 
   public Post getById(long id) {
-    if(id >= repo.size()) {
+    if(idCounter.get() < id) {
       throw new NotFoundException("No post with id " + id + " is exist!");
     } else {
-      return repo.get((int) id);
+      return repo.get(id);
     }
   }
 
   public Post save(Post post) {
     if(post.getId() == 0) {
-      post.setId(idCounter);
-      repo.add(post);
-      idCounter++;
+      Long ident = idCounter.getAndIncrement();
+      post.setId(ident);
+      repo.put(ident, post);
     } else if (this.getById(post.getId()) != null) {
-        Post postToEdit = repo.get((int)post.getId() - 1);
+        Post postToEdit = repo.get(post.getId());
         postToEdit.setContent(post.getContent());
     } else {
       throw new NotFoundException("No post with id " + post.getId() + " is exist! To save new please change id to 0");
@@ -52,7 +56,7 @@ public class PostRepository {
 
   public void removeById(long id) {
     if(this.getById(id) != null) {
-      repo.remove((int) id);
+      repo.remove(id);
     } else {
       throw new NotFoundException("No post with id " + id + " is exist!");
     }
