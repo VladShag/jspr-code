@@ -19,10 +19,18 @@ public class MainServlet extends HttpServlet {
   private static final String METHOD_DELETE = "DELETE";
   private static final String POSTS_PATH = "/api/posts";
   private static final String POST_ID_PATH = "/api/posts/\\d+";
+<<<<<<< Updated upstream
   private final AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Config.class);
 
   @Override
   public void init() {
+=======
+  @Override
+  public void init() {
+    final var context =
+            new AnnotationConfigApplicationContext
+                    ("ru/netology");
+>>>>>>> Stashed changes
     controller = context.getBean(PostController.class);
   }
 
